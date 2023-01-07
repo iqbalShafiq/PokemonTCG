@@ -15,7 +15,8 @@ class PokemonRepository(
         return Pager(
             config = PagingConfig(
                 pageSize = 20,
-                initialLoadSize = 20
+                initialLoadSize = 20,
+                prefetchDistance = 5
             ),
             remoteMediator = PokemonRemoteMediator(
                 name,

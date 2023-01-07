@@ -10,7 +10,6 @@ import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import space.iqbalsyafiq.pokemontcg.R
 import space.iqbalsyafiq.pokemontcg.adapter.LoadingStateAdapter
 import space.iqbalsyafiq.pokemontcg.adapter.PokemonListAdapter
 import space.iqbalsyafiq.pokemontcg.databinding.ActivityPokemonListBinding
@@ -58,7 +57,10 @@ class PokemonListActivity : AppCompatActivity() {
                 viewModel.isDatabaseEmpty().observe(
                     this@PokemonListActivity
                 ) { isEmpty ->
-                    if (isEmpty) onFetchError(loadState)
+                    Log.d(TAG, "initAdapter: $isEmpty")
+                    if (isEmpty) {
+                        onFetchError(loadState)
+                    }
                 }
             }
 
@@ -72,35 +74,24 @@ class PokemonListActivity : AppCompatActivity() {
             binding.swipeRefresh.isRefreshing = true
             binding.tvErrorState.visibility = View.GONE
         } else {
+            binding.rvPokemon.visibility = View.VISIBLE
             binding.swipeRefresh.isRefreshing = false
         }
     }
 
     private fun onFetchError(loadState: CombinedLoadStates) {
-        val errorState = when {
-            loadState.append is LoadState.Error -> loadState.append as LoadState.Error
-            loadState.prepend is LoadState.Error -> loadState.prepend as LoadState.Error
-            loadState.refresh is LoadState.Error -> loadState.refresh as LoadState.Error
-            else -> null
-        }
-        errorState?.let {
-            Log.d(TAG, "onFetchError: Should be error")
-            binding.tvErrorState.text = getString(R.string.error_state_message)
-            binding.tvErrorState.visibility = View.VISIBLE
-            binding.rvPokemon.visibility = View.GONE
-        } ?: run {
-            Log.d(TAG, "onFetchError: Should not be error")
-            binding.tvErrorState.visibility = View.GONE
-            binding.rvPokemon.visibility = View.VISIBLE
-        }
+        Log.d(TAG, "onFetchError: Should be error")
+        binding.tvErrorState.visibility = View.VISIBLE
+        binding.rvPokemon.visibility = View.GONE
+        onFetchEmpty(loadState)
     }
 
     private fun onFetchEmpty(loadState: CombinedLoadStates) {
         if (loadState.append.endOfPaginationReached) {
             if (adapter.itemCount < 1) {
-                binding.tvErrorState.text = getString(R.string.empty_state_message)
+                Log.d(TAG, "onFetchEmpty: Should be empty")
                 binding.tvErrorState.visibility = View.VISIBLE
-            } else binding.tvErrorState.visibility = View.GONE
+            }
         }
     }
 
@@ -130,8 +121,10 @@ class PokemonListActivity : AppCompatActivity() {
 
     private fun getData(query: String = "") {
         viewModel.getPokemon(query).observe(this) {
-            adapter.submitData(lifecycle, it)
-            Log.d(TAG, "getData: ${adapter.itemCount}")
+            it?.let {
+                adapter.submitData(lifecycle, it)
+                Log.d(TAG, "getData: ${adapter.itemCount}")
+            }
         }
     }
 

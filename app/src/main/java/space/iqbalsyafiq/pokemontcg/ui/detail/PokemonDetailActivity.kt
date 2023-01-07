@@ -29,17 +29,20 @@ class PokemonDetailActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // get pokemon data
-        val pokemonData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(POKEMON_EXTRA, PokemonData::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            intent.getParcelableExtra(POKEMON_EXTRA)
-        }
+        val pokemonData = getPokemonData()
 
         setSelectedPokemon(pokemonData)
+        onBackButtonPressed()
         setPokemonBioView(pokemonData)
         setPokemonImageView()
         setOnDownloadListener()
+    }
+
+    private fun getPokemonData() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        intent.getParcelableExtra(POKEMON_EXTRA, PokemonData::class.java)
+    } else {
+        @Suppress("DEPRECATION")
+        intent.getParcelableExtra(POKEMON_EXTRA)
     }
 
     private fun setSelectedPokemon(pokemonData: PokemonData?) {
@@ -52,6 +55,10 @@ class PokemonDetailActivity : AppCompatActivity() {
                 pokemonImage = image.large
             }
         }
+    }
+
+    private fun onBackButtonPressed() {
+        binding.ivBack.setOnClickListener { finish() }
     }
 
     private fun setPokemonBioView(pokemonData: PokemonData?) {
